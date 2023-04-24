@@ -1,5 +1,6 @@
 import { mongoErrorHandler } from '@leapjs/common';
-import { getModelForClass, index, post, prop } from '@typegoose/typegoose';
+import { Ref, getModelForClass, index, post, prop } from '@typegoose/typegoose';
+import { UserReferral } from 'app/referral/model/referUsers';
 import { Expose } from 'class-transformer';
 import { IsAlpha, IsDefined, IsEnum, IsPhoneNumber } from 'class-validator';
 import { Gender, Roles } from 'common/constants';
@@ -8,7 +9,7 @@ import { EMPTY_DOB, EMPTY_GENDER, EMPTY_PHONE } from 'resources/strings/app/auth
 import { INVALID_GENDER, INVALID_NAME } from 'resources/strings/app/role';
 import { EMPTY_FIRST_NAME, INVALID_FIRST_NAME, INVALID_PHONE } from 'resources/strings/app/user';
 
-@index({ phone: 1, empId: 1 }, { unique: true })
+@index({ referralId: 1 }, { unique: true })
 @post('save', mongoErrorHandler('users'))
 @post('findOneAndUpdate', mongoErrorHandler('users'))
 class User {
@@ -41,6 +42,12 @@ class User {
   @prop({ required: true })
   @IsDefined({ groups: ['create'], message: EMPTY_DOB })
   public birthDate!: string;
+
+  @prop({ unique: true })
+  public referralId!: string;
+
+  @prop()
+  public referrals!: [Ref<UserReferral>];
 }
 
 const UserModel = getModelForClass(User, {

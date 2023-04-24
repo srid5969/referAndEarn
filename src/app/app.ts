@@ -8,7 +8,8 @@ import helmet from 'helmet';
 import ErrorHandler from 'common/Handle-Error/error-handler';
 import { configurations } from 'configuration/manager';
 import { UserController } from 'app/users/controller/UserController';
-export const main = () => {
+export const main = async () => {
+
   const port = configurations.port;
   const application: LeapApplication = new LeapApplication();
   mongoose.connect(configurations.mongodbHostName || '', {
@@ -32,4 +33,5 @@ export const main = () => {
     Logger.log(`⚡️[server]: Server is running at http://localhost:${port}`, 'NODE Server');
   });
   Logger.log(`Initializing settings`, 'ConfigurationManager');
+
 };
