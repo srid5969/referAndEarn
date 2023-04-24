@@ -46,8 +46,11 @@ class User {
   @prop({ unique: true })
   public referralId!: string;
 
-  @prop()
+  @prop({ type: ObjectId })
   public referrals!: [Ref<UserReferral>];
+
+  @prop({ default: 0 })
+  public referralAmount!: number;
 }
 
 const UserModel = getModelForClass(User, {

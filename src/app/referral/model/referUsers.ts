@@ -14,12 +14,12 @@ class UserReferral {
   /**
    * The @owner is a person one who refer his friend
    */
-  @prop()
+  @prop({ type: ObjectId })
   public owner!: Ref<User>;
   /**
    * @param user - is a person one who referred by his friend
    */
-  @prop()
+  @prop({ type: ObjectId })
   public user!: Ref<User>;
   /**
    * @param madeFirstTransaction - The referral is completed once the user made his first transaction
