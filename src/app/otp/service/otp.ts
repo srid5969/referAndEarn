@@ -47,7 +47,7 @@ export class OTPService {
     const t = await OTPModel.findOne({ token, otp });
     console.log(t);
 
-    if (t) return true;
+    if (t) return t.user;
     return false;
   }
 }
