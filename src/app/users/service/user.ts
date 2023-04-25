@@ -1,16 +1,16 @@
 import { ConflictException, HttpStatus, inject, injectable } from "@leapjs/common";
+import { OTPService } from "app/otp/service/otp";
 import { ReferService } from "app/referral/service/referral";
 import { TokenModel } from "app/userSession/model/usersToken";
 import { User, UserModel } from "app/users/model/User";
 import { ResponseMessage, ResponseReturnType } from "common/response/response.types";
-import { AuthService } from "common/services/auth";
 
 @injectable()
 export class UserService {
   @inject(() => ReferService)
   private readonly referAppService!: ReferService;
-  @inject(() => AuthService)
-  private readonly authService!: AuthService;
+  @inject(() => OTPService)
+  private readonly otpService!: OTPService;
   public async checkUserPhoneNumber(phone: number): Promise<any> {
     return new Promise<boolean>(async (resolve) => {
       const registeredUser = await UserModel.findOne({ phone: phone });
@@ -59,11 +59,12 @@ export class UserService {
    */
   public async verifyUser(phone: number): Promise<ResponseReturnType | any> {
     const userData = await this.checkUserPhoneNumber(phone);
+    const token=await this.otpService.generateOTP();
     if (userData) {
       return {
         code: HttpStatus.OK,
         existingUser: true,
-        data: userData,
+        data: token,
         error: null,
         message: "The otp has been sent successfully",
         status: true,
