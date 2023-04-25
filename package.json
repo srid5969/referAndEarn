@@ -13,7 +13,8 @@
 		"stop:prod": "pm2  stop ./build/server.js",
 		"restart:prod": "pm2  restart ./build/server.js --watch",
 		"monit:prod": "pm2  monit ./build/server.js --watch",
-		"test": "jest"
+		"test": "jest",
+		"restart":"npm run build && npm run restart:prod"
 	},
 	"_moduleAliases": {
 		"app": "build/app",

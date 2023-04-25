@@ -57,10 +57,10 @@ export class UserService {
   /**
    * login
    */
-  public async verifyUser(phone: number): Promise<ResponseReturnType | any> {
+  public async loginOrRegister(phone: number): Promise<ResponseReturnType | any> {
     const userData = await this.checkUserPhoneNumber(phone);
-    const token=await this.otpService.generateOTP();
     if (userData) {
+      const token = await this.otpService.generateOTP(phone,userData);
       return {
         code: HttpStatus.OK,
         existingUser: true,
@@ -106,5 +106,26 @@ export class UserService {
         status: false,
       };
     }
+  }
+
+  public async verifyOtp(payload: any): Promise<ResponseReturnType> {
+    const { otp, token } = payload;
+    const isVerified = await this.otpService.verifyOTP(otp, token);
+    if (isVerified) {
+      return {
+        code: HttpStatus.OK,
+        data: "Welcome user",
+        status: true,
+        error: null,
+        message: "OTP successfully verified",
+      };
+    }
+    return {
+      code: HttpStatus.UNAUTHORIZED,
+      data: "Cannot verify",
+      status: false,
+      error: "Wrong otp",
+      message: "OTP cannot be verified",
+    };
   }
 }
