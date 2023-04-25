@@ -60,7 +60,7 @@ export class UserService {
   public async loginOrRegister(phone: number): Promise<ResponseReturnType | any> {
     const userData = await this.checkUserPhoneNumber(phone);
     if (userData) {
-      const token = await this.otpService.generateOTP(phone,userData);
+      const token = await this.otpService.generateOTP(phone, userData);
       return {
         code: HttpStatus.OK,
         existingUser: true,
