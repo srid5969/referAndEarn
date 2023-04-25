@@ -1,13 +1,13 @@
 import 'reflect-metadata';
-import morgan from 'morgan';
 import { Logger } from '@leapjs/common';
 import { LeapApplication } from '@leapjs/core';
 import { ExpressAdapter } from '@leapjs/router';
 import { mongoose } from '@typegoose/typegoose';
-import helmet from 'helmet';
+import { UserController } from 'app/users/controller/UserController';
 import ErrorHandler from 'common/Handle-Error/error-handler';
 import { configurations } from 'configuration/manager';
-import { UserController } from 'app/users/controller/UserController';
+import helmet from 'helmet';
+import morgan from 'morgan';
 export const main = async () => {
 
   const port = configurations.port;
@@ -25,7 +25,7 @@ export const main = async () => {
       origin: '*',
       credentials: true,
     },
-    beforeMiddlewares: [helmet(), morgan('dev')],
+    beforeMiddlewares: [helmet(), morgan('combined')],
     controllers: [UserController],
     afterMiddlewares: [ErrorHandler],
   });

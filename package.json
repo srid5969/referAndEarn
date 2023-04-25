@@ -6,7 +6,7 @@
 		"start": "ts-node-dev src/server.ts",
 		"build": "npm run clean && tsc",
 		"clean": "shx rm -rf build",
-		"dev": "ts-node ./src/server.ts",
+		"dev": "ts-node-dev ./src/server.ts",
 		"start:dev": " ts-node-dev -r tsconfig-paths/register src/server.ts ",
 		"start:prod": "pm2  start ./build/server.js",
 		"start:dev:prod": "nodemon src/server.ts",

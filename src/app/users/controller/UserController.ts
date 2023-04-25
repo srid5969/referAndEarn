@@ -27,7 +27,7 @@ export class UserController {
   @UseBefore(validate(User, ["login"]))
   public async login(@Body() req: any, @Res() res: Response): Promise<Response> {
     try {
-      const data = await this.userService.login(req.phone, req.password);
+      const data = await this.userService.verifyUser(req.phone);
       return data.code ? res.status(data.code).json(data) : res.status(HttpStatus.ACCEPTED).send(data);
     } catch (error: any) {
       return error.status ? res.status(error.code).json(error) : res.status(HttpStatus.CONFLICT).send(error);
@@ -54,5 +54,12 @@ export class UserController {
           return resolve(res.status(err.code).json(err));
         });
     });
+  }
+  @Post("/verify-otp")
+  /**
+   * verifyOTP
+   */
+  public async verifyOTP(): Promise<Response> {
+    return 
   }
 }
