@@ -9,7 +9,7 @@
 		"dev": "ts-node-dev ./src/server.ts",
 		"start:dev": " ts-node-dev -r tsconfig-paths/register src/server.ts ",
 		"start:prod": "pm2  start ./build/server.js",
-		"start:dev:prod": "nodemon src/server.ts",
+		"start:test": "nodemon  sh run.sh",
 		"stop:prod": "pm2  stop ./build/server.js",
 		"restart:prod": "pm2  restart ./build/server.js --watch",
 		"monit:prod": "pm2  monit ./build/server.js --watch",

@@ -43,11 +43,11 @@ export class OTPService {
 
     return { authenticity_token: secret, otp: code };
   }
-  public async verifyOTP(otp: any, token: any) {
+  public async verifyOTP(otp: any, token: any):Promise<any> {
     const t = await OTPModel.findOne({ token, otp });
     console.log(t);
 
-    if (t) return t.user;
-    return false;
+    if (t) return await t.user;
+    return null;
   }
 }

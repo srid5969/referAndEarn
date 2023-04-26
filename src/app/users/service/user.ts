@@ -4,6 +4,8 @@ import { ReferService } from "app/referral/service/referral";
 import { TokenModel } from "app/userSession/model/usersToken";
 import { User, UserModel } from "app/users/model/User";
 import { ResponseMessage, ResponseReturnType } from "common/response/response.types";
+import jsonwebtoken from "jsonwebtoken";
+import { configurations } from "configuration/manager";
 
 @injectable()
 export class UserService {
@@ -109,23 +111,37 @@ export class UserService {
   }
 
   public async verifyOtp(payload: any): Promise<ResponseReturnType> {
-    const { otp, token } = payload;
-    const isVerified = await this.otpService.verifyOTP(otp, token);
-    if (isVerified) {
+    try {
+      const { otp, token } = payload;
+      const user = await this.otpService.verifyOTP(otp, token);
+
+      if (user) {
+        const userData = await UserModel.findOne({ _id: user });
+
+        const jwttoken = await jsonwebtoken.sign(JSON.stringify(userData), configurations.jwtSecret || "");
+        return {
+          code: HttpStatus.OK,
+          data: { token: jwttoken },
+          status: true,
+          error: null,
+          message: "OTP successfully verified",
+        };
+      }
       return {
-        code: HttpStatus.OK,
-        data: "Welcome user",
-        status: true,
-        error: null,
-        message: "OTP successfully verified",
+        code: HttpStatus.UNAUTHORIZED,
+        data: "Cannot verify",
+        status: false,
+        error: "Wrong otp",
+        message: "OTP cannot be verified",
+      };
+    } catch (err: any) {
+      return {
+        code: HttpStatus.INTERNAL_SERVER_ERROR,
+        data: "server side error",
+        status: false,
+        error: err,
+        message: "server issue",
       };
     }
-    return {
-      code: HttpStatus.UNAUTHORIZED,
-      data: "Cannot verify",
-      status: false,
-      error: "Wrong otp",
-      message: "OTP cannot be verified",
-    };
   }
 }
