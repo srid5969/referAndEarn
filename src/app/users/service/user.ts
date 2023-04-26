@@ -117,11 +117,11 @@ export class UserService {
 
       if (user) {
         const userData = await UserModel.findOne({ _id: user });
-
-        const jwttoken = await jsonwebtoken.sign(JSON.stringify(userData), configurations.jwtSecret || "");
+        const payload = Object.assign({}, userData, { date: Date.now() });
+        const jwtToken = await jsonwebtoken.sign(JSON.stringify(payload), configurations.jwtSecret || "");
         return {
           code: HttpStatus.OK,
-          data: { token: jwttoken },
+          data: { token: jwtToken },
           status: true,
           error: null,
           message: "OTP successfully verified",
