@@ -6,6 +6,7 @@ import Authentication from "common/middleware/auth";
 import validate from "common/middleware/validator";
 import { ResponseReturnType } from "common/response/response.types";
 import { Request, Response } from "express";
+import { UserControllerValidation } from "app/users/controllerValidation/user";
 
 @Controller("/user")
 export class UserController {
@@ -39,6 +40,7 @@ export class UserController {
   }
 
   @Post("/signup")
+  @UseBefore(UserControllerValidation)
   @UseBefore(validate(User, ["create"]))
   public async signUp(@Req() req: Request, @Res() res: Response): Promise<Response> {
     return new Promise<Response>((resolve) => {
