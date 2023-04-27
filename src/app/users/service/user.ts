@@ -140,7 +140,12 @@ export class UserService {
       };
     }
   }
-
+  
+  /**
+   * @login - otp verification 
+   * @param {otp,token}
+   * @returns {ResponseReturnType}
+   */
   public async verifyOtp(payload: any): Promise<ResponseReturnType> {
     try {
       const { otp, token } = payload;
