@@ -37,8 +37,8 @@ class User {
   @prop({ unique: true })
   public referralId!: string;
 
-  @prop({ default: null })
-  public referredBy!: string;
+  @prop({ type: ObjectId, default: null })
+  public referredBy!: Ref<User>;
 
   @prop({ required: true, unique: true })
   @IsDefined({ groups: ["create"], message: ENTER_DEVICE_ID })

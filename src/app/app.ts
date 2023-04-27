@@ -8,6 +8,7 @@ import ErrorHandler from 'common/Handle-Error/error-handler';
 import { configurations } from 'configuration/manager';
 import helmet from 'helmet';
 import morgan from 'morgan';
+import { ReferralController } from 'app/referral/controller/referral';
 export const main = async () => {
 
   const port = configurations.port;
@@ -26,7 +27,7 @@ export const main = async () => {
       credentials: true,
     },
     beforeMiddlewares: [helmet(), morgan('combined')],
-    controllers: [UserController],
+    controllers: [UserController,ReferralController],
     afterMiddlewares: [ErrorHandler],
   });
   server.listen(port, () => {

@@ -26,7 +26,7 @@ export class OTPService {
       token: await uuidv4(),
       user: user,
     }).save();
-    return await save;
+    return await { token: save.token, otp: save.otp };
   }
   /**
    *
@@ -43,9 +43,8 @@ export class OTPService {
 
     return { authenticity_token: secret, otp: code };
   }
-  public async verifyOTP(otp: any, token: any):Promise<any> {
-    const t = await OTPModel.findOne({ token, otp });
-    console.log(t);
+  public async verifyOTP(otp: any, token: any): Promise<any> {
+    const t = await OTPModel.findOneAndDelete({ token, otp });
 
     if (t) return await t.user;
     return null;

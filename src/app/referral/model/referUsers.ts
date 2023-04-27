@@ -24,7 +24,7 @@ class UserReferral {
   /**
    * @param madeFirstTransaction - The referral is completed once the user made his first transaction
    */
-  @prop()
+  @prop({default:false})
   public madeFirstTransaction!: boolean;
 }
 

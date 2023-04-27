@@ -12,8 +12,9 @@ class Authentication {
 
     let token: any = req.headers.authorization.split(" ") || "";
     if (token[1]) {
-      const data = TokenModel.findOne({ token: token[1] ,expired:false});
+      const data = TokenModel.findOne({ token: token[1], expired: false });
       if (data) {
+        req.user = data.user;
         return next();
       }
       res.json({ message: AUTH_TOKEN_INVALID });

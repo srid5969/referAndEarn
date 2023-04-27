@@ -4,7 +4,7 @@ import { ReferService } from "app/referral/service/referral";
 import { TokenModel } from "app/userSession/model/usersToken";
 import { User, UserModel } from "app/users/model/User";
 import { ResponseMessage, ResponseReturnType } from "common/response/response.types";
-import jsonwebtoken from "jsonwebtoken";
+import jsonwebtoken, { JwtPayload, Secret, SignOptions } from "jsonwebtoken";
 import { configurations } from "configuration/manager";
 
 @injectable()
@@ -37,6 +37,22 @@ export class UserService {
     return new Promise<ResponseReturnType>(async (resolve, reject) => {
       try {
         data.referralId = await this.referAppService.generateReferralId(6);
+
+        if (data.referredBy) {
+          const findingUser = await UserModel.findOne({ referralId: data.referredBy });
+          
+          if (!findingUser) {
+            const result:ResponseReturnType={
+              code: HttpStatus.UNPROCESSABLE_ENTITY,
+              message: "Referral id does not match to any user",
+              error: "User valid referral id to avoid the error",
+              data: null,status:true
+            }
+            return resolve(result);
+          }
+          const referringUser = findingUser._id;
+          data.referredBy = referringUser;
+        }
         const saveUser = await new UserModel(data).save();
         return resolve({
           code: HttpStatus.ACCEPTED,
@@ -117,11 +133,18 @@ export class UserService {
 
       if (user) {
         const userData = await UserModel.findOne({ _id: user });
-        const payload = Object.assign({}, userData, { date: Date.now() });
-        const jwtToken = await jsonwebtoken.sign(JSON.stringify(payload), configurations.jwtSecret || "");
+        const payload: JwtPayload = Object.assign({}, { userId: userData._id }, { date: Date.now() }, { exp: 60 * 60 * 24 * 21 });
+        console.log(payload);
+        const option: SignOptions = {} as SignOptions;
+        const secret: Secret = configurations.jwtSecret || "";
+        const jwtToken = await jsonwebtoken.sign(payload, secret, option);
+        const saveToken = await new TokenModel({
+          token: jwtToken,
+          user: userData,
+        }).save();
         return {
           code: HttpStatus.OK,
-          data: { token: jwtToken },
+          data: { token: jwtToken, referredBy: userData.referredBy, referralId: userData.referralId, referrals: userData.referrals, referralAmount: userData.referralAmount, phone: userData.phone, id: userData._id },
           status: true,
           error: null,
           message: "OTP successfully verified",
@@ -135,6 +158,8 @@ export class UserService {
         message: "OTP cannot be verified",
       };
     } catch (err: any) {
+      console.log(err);
+
       return {
         code: HttpStatus.INTERNAL_SERVER_ERROR,
         data: "server side error",

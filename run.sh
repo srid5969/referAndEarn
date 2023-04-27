@@ -7,5 +7,5 @@ echo "The build was completed"
 
 echo "About to run the application in a min"
 
-npx nodemon src/server.ts
+npx nodemon build/server.js
 
