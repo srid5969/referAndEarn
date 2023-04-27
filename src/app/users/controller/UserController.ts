@@ -6,7 +6,7 @@ import Authentication from "common/middleware/auth";
 import validate from "common/middleware/validator";
 import { ResponseReturnType } from "common/response/response.types";
 import { Request, Response } from "express";
-import { UserControllerValidation } from "app/users/controllerValidation/user";
+import { UserControllerValidation } from "app/users/controllerValidation/userValidator";
 
 @Controller("/user")
 export class UserController {
