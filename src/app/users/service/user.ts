@@ -154,7 +154,6 @@ export class UserService {
       if (user) {
         const userData = await UserModel.findOne({ _id: user });
         const payload: JwtPayload = Object.assign({}, { userId: userData._id }, { date: Date.now() }, { exp: 60 * 60 * 24 * 21 });
-        console.log(payload);
         const option: SignOptions = {} as SignOptions;
         const secret: Secret = configurations.jwtSecret || "";
         const jwtToken = await jsonwebtoken.sign(payload, secret, option);
