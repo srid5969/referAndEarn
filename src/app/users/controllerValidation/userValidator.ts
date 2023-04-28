@@ -1,4 +1,4 @@
-import { inject } from "@leapjs/common";
+import { HttpStatus, inject } from "@leapjs/common";
 import { Middleware } from "@leapjs/router";
 import { NextFunction, Request, Response } from "express";
 import { UserValidationService } from "../service/userValidation";
@@ -11,10 +11,18 @@ export class UserControllerValidation {
     //registration validation
     const phone: number = req.body.phone;
     //verify phone
-    const verified: boolean = await this.service.verified(phone);
-
+    const verified: boolean = await this.service.verify(phone);
+    if (req.body.referredBy) {
+      const referredBy = await this.service.changereferredByToObjectId(req.body.referredBy);
+      if (!referredBy) {
+        return res.status(HttpStatus.NON_AUTHORITATIVE_INFORMATION).json({
+          message: "Wrong referral id",
+        });
+      }
+      req.body.referredBy = referredBy;
+    }
     if (verified) {
-      next();
+      return next();
     }
 
     return res.status(422).json({ message: "Phone is not verified yet" });
