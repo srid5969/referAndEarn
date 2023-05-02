@@ -1,12 +1,11 @@
 import { HttpStatus, inject } from "@leapjs/common";
 import { Body, Controller, Get, Header, Param, Post, Req, Res, UseBefore } from "@leapjs/router";
+import { UserControllerValidation } from "app/users/controllerValidation/userValidator";
 import { User } from "app/users/model/User";
 import { UserService } from "app/users/service/user";
 import Authentication from "common/middleware/auth";
 import validate from "common/middleware/validator";
-import { ResponseReturnType } from "common/response/response.types";
-import { Request, Response } from "express";
-import { UserControllerValidation } from "app/users/controllerValidation/userValidator";
+import { Response } from "express";
 
 @Controller("/user")
 export class UserController {
@@ -40,23 +39,17 @@ export class UserController {
   }
 
   @Post("/signup")
+  @UseBefore(Authentication)
   @UseBefore(UserControllerValidation)
   @UseBefore(validate(User, ["create"]))
-  public async signUp(@Req() req: Request, @Res() res: Response): Promise<Response> {
-    return new Promise<Response>((resolve) => {
-      const data: User = req.body;
-      return this.userService
-        .userSignUp(data)
-        .then((result: ResponseReturnType) => {
-          return resolve(res.status(HttpStatus.OK).send(result));
-        })
-        .catch((err: ResponseReturnType): any => {
-          return resolve(res.status(err.code).json(err));
-        });
-    });
+  public async signUp(@Body() body: User, @Req() req: any,@Res() res:Response): Promise<Response> {
+    const data = await this.userService.signUpWithId(req.user._id, body);
+    return data.code ? res.status(data.code).json(data) : res.status(HttpStatus.ACCEPTED).send(data);
+
   }
   @Post("/verify-otp")
   public async verifyOTP(@Body() req: any, @Res() res: Response): Promise<Response> {
+    
     try {
       const data = await this.userService.verifyOtp(req);
       return data.code ? res.status(data.code).json(data) : res.status(HttpStatus.ACCEPTED).send(data);

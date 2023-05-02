@@ -6,6 +6,7 @@ import { User, UserModel } from "app/users/model/User";
 import { ResponseMessage, ResponseReturnType } from "common/response/response.types";
 import jsonwebtoken, { JwtPayload, Secret, SignOptions } from "jsonwebtoken";
 import { configurations } from "configuration/manager";
+import { ObjectId } from "mongodb";
 
 @injectable()
 export class UserService {
@@ -103,6 +104,7 @@ export class UserService {
         status: true,
       };
     }
+    return await this.registeringMobile(phone);
     return {
       code: HttpStatus.PERMANENT_REDIRECT,
       existingUser: false,
@@ -140,9 +142,9 @@ export class UserService {
       };
     }
   }
-  
+
   /**
-   * @login - otp verification 
+   * @login - otp verification
    * @param {otp,token}
    * @returns {ResponseReturnType}
    */
@@ -153,21 +155,7 @@ export class UserService {
 
       if (user) {
         const userData = await UserModel.findOne({ _id: user });
-        const payload: JwtPayload = Object.assign({}, { userId: userData._id }, { date: Date.now() }, { exp: 60 * 60 * 24 * 21 });
-        const option: SignOptions = {} as SignOptions;
-        const secret: Secret = configurations.jwtSecret || "";
-        const jwtToken = await jsonwebtoken.sign(payload, secret, option);
-        const saveToken = await new TokenModel({
-          token: jwtToken,
-          user: userData,
-        }).save();
-        return {
-          code: HttpStatus.OK,
-          data: { token: jwtToken, referredBy: userData.referredBy, referralId: userData.referralId, referrals: userData.referrals, referralAmount: userData.referralAmount, phone: userData.phone, id: userData._id },
-          status: true,
-          error: null,
-          message: "OTP successfully verified",
-        };
+        return await this.generateJWT(userData);
       }
       return {
         code: HttpStatus.UNAUTHORIZED,
@@ -187,5 +175,106 @@ export class UserService {
         message: "server issue",
       };
     }
+  }
+
+  public async signUpWithId(_id: ObjectId, payload: User): Promise<ResponseReturnType> {
+    if (payload.referredBy) {
+      // checking if the device id is not presented in database - to avoid multiple time registration in same mobile with multiple referral code
+      const existingDeviceId = await UserModel.findOne({ deviceId:  payload.deviceId ,_id:{$ne:_id} });
+      console.log(existingDeviceId,"[][[][][][][][][][][][][][][][][][][][][][]");
+      
+      if (existingDeviceId) {
+        return {
+          code: HttpStatus.NOT_ACCEPTABLE,
+          data: null,
+          error: "This device has been already registered using another phone number",
+          message: "This device trying multiple referrals",
+          status: false,
+        };
+      }
+    }
+
+    const updateProfile = await UserModel.findOneAndUpdate({ _id }, payload);
+
+    if (!updateProfile) {
+      return {
+        code: HttpStatus.NOT_MODIFIED,
+        message: "This doc cannot be modified",
+        error: "Must be a server side issue",
+        data: null,
+        status: false,
+      };
+    }
+    return {
+      code: HttpStatus.OK,
+      data: await this.generateJWT(updateProfile),
+      error: null,
+      message: "Successfully registered",
+      status: true,
+    };
+  }
+
+  /**
+   * @params {number}
+   */
+  public async registeringMobile(phone: number): Promise<ResponseReturnType> {
+    try {
+      const saveNumber = await new UserModel({ phone, verified: false }).save();
+
+      const token = await this.otpService.generateOTP(phone, saveNumber._id);
+      return {
+        code: 200,
+        message: "OTP has been successfully sended",
+        data: token,
+        error: null,
+        status: true,
+      };
+    } catch (error) {
+      return {
+        code: HttpStatus.UNPROCESSABLE_ENTITY,
+        message: "Trouble in paradise",
+        error,
+        data: null,
+        status: false,
+      };
+    }
+  }
+  public async verifyOTP(payload: any): Promise<ResponseReturnType> {
+    const { otp, token } = payload;
+
+    const user: ObjectId | boolean = await this.otpService.verifyOTP(otp, token);
+    if (user) {
+      return {
+        code: 200,
+        status: true,
+        message: "Otp has been successfully verified",
+        error: null,
+        data: null,
+      };
+    }
+    return {
+      code: HttpStatus.NON_AUTHORITATIVE_INFORMATION,
+      status: false,
+      message: "Otp  cannot verified",
+      error: null,
+      data: null,
+    };
+  }
+  public async generateJWT(userData: any) {
+    const payload: JwtPayload = Object.assign({}, { userId: userData._id }, { date: Date.now() }, { exp: 60 * 60 * 24 * 21 });
+    const option: SignOptions = {} as SignOptions;
+    const secret: Secret = configurations.jwtSecret || "";
+    const jwtToken = await jsonwebtoken.sign(payload, secret, option);
+    await new TokenModel({
+      token: jwtToken,
+      user: userData,
+    }).save();
+    return {
+      code: HttpStatus.OK,
+      data: { token: jwtToken, referredBy: userData.referredBy, referralId: userData.referralId, referrals: userData.referrals, referralAmount: userData.referralAmount, phone: userData.phone, id: userData._id },
+      status: true,
+      error: null,
+      message: "OTP successfully verified",
+    };
   }
 }

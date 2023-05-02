@@ -16,13 +16,13 @@ class User {
   @prop({ _id: true, id: ObjectId })
   public id?: ObjectId;
 
-  @prop({ required: true })
+  @prop({ required: true, default: "Pending" })
   @IsAlpha("en-US", { groups: ["create"], message: INVALID_FIRST_NAME })
   @IsDefined({ groups: ["create"], message: EMPTY_FIRST_NAME })
   public name?: string;
 
   @prop({ required: true, unique: true })
-  @IsDefined({ groups: ["create", "login"], message: EMPTY_PHONE })
+  @IsDefined({ groups: [ "login"], message: EMPTY_PHONE })
   @IsPhoneNumber("IN", { always: true, message: INVALID_PHONE })
   public phone!: number;
 
@@ -31,8 +31,8 @@ class User {
   @IsEnum(Roles, { groups: ["create", "update"], message: INVALID_NAME })
   public role!: string;
 
-  @prop({ required: true, default: true })
-  public active!: boolean;
+  @prop({ required: true, default: false })
+  public verified!: boolean;
 
   @prop({ unique: true })
   public referralId!: string;
@@ -40,7 +40,7 @@ class User {
   @prop({ type: ObjectId, default: null })
   public referredBy!: Ref<User>;
 
-  @prop({ required: true, unique: true })
+  @prop({ required: false })
   @IsDefined({ groups: ["create"], message: ENTER_DEVICE_ID })
   public deviceId!: string;
 
