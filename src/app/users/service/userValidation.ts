@@ -8,10 +8,11 @@ export class UserValidationService {
     // const 
     return true;
   }
-  public async changereferredByToObjectId(referralId:string){
+  public async changeReferredByToObjectId(referralId:string){
     const data= await UserModel.findOne({referralId})
-    console.log(data,"123456789");
-    
+    if(data){
+      return null
+    }
     return data._id
   }
 }

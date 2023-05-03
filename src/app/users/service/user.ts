@@ -165,7 +165,6 @@ export class UserService {
         message: "OTP cannot be verified",
       };
     } catch (err: any) {
-      console.log(err);
 
       return {
         code: HttpStatus.INTERNAL_SERVER_ERROR,
@@ -181,7 +180,6 @@ export class UserService {
     if (payload.referredBy) {
       // checking if the device id is not presented in database - to avoid multiple time registration in same mobile with multiple referral code
       const existingDeviceId = await UserModel.findOne({ deviceId:  payload.deviceId ,_id:{$ne:_id} });
-      console.log(existingDeviceId,"[][[][][][][][][][][][][][][][][][][][][][]");
       
       if (existingDeviceId) {
         return {

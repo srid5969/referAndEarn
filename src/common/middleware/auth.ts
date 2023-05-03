@@ -15,9 +15,7 @@ class Authentication {
       const data = await TokenModel.findOne({ token: token[1], expired: false });
       if (data) {
         req.user = data.user;
-        console.log(data);
         
-        console.log(req.user,"Middleware");
         
         return next();
       }
