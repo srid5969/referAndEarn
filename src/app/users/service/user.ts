@@ -38,7 +38,7 @@ export class UserService {
     return new Promise<ResponseReturnType>(async (resolve, reject) => {
       try {
         let referralId: any = data.referredBy;
-        let owner: any;
+        let owner: any=null;
         data.referralId = await this.referAppService.generateReferralId(6);
 
         if (data.referredBy) {
@@ -165,7 +165,6 @@ export class UserService {
         message: "OTP cannot be verified",
       };
     } catch (err: any) {
-      console.log(err);
 
       return {
         code: HttpStatus.INTERNAL_SERVER_ERROR,
@@ -181,7 +180,6 @@ export class UserService {
     if (payload.referredBy) {
       // checking if the device id is not presented in database - to avoid multiple time registration in same mobile with multiple referral code
       const existingDeviceId = await UserModel.findOne({ deviceId:  payload.deviceId ,_id:{$ne:_id} });
-      console.log(existingDeviceId,"[][[][][][][][][][][][][][][][][][][][][][]");
       
       if (existingDeviceId) {
         return {
@@ -219,7 +217,7 @@ export class UserService {
    */
   public async registeringMobile(phone: number): Promise<ResponseReturnType> {
     try {
-      const saveNumber = await new UserModel({ phone, verified: false }).save();
+      const saveNumber = await new UserModel({ phone, verified: false ,referralId:await this.referAppService.generateReferralId(6)}).save();
 
       const token = await this.otpService.generateOTP(phone, saveNumber._id);
       return {

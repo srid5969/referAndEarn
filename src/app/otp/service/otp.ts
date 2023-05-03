@@ -4,7 +4,6 @@ import otp from "@distrentic/totp";
 import { ObjectId } from "mongodb";
 import { v4 as uuidv4 } from "uuid";
 
-import { TokenModel } from "app/userSession/model/usersToken";
 import { OTPModel } from "../model/otp";
 
 @injectable()
