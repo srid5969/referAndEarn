@@ -34,7 +34,7 @@ class User {
   @prop({ required: true, default: false })
   public verified!: boolean;
 
-  @prop({ unique: true })
+  @prop({ unique: true,required: true })
   public referralId!: string;
 
   @prop({ type: ObjectId, default: null })
