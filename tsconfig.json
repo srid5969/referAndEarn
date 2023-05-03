@@ -30,6 +30,7 @@
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "noEmitOnError": false,
+    "skipLibCheck": true,
     "noEmit":false
   }
 }

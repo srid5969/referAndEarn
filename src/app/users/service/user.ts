@@ -38,7 +38,7 @@ export class UserService {
     return new Promise<ResponseReturnType>(async (resolve, reject) => {
       try {
         let referralId: any = data.referredBy;
-        let owner: any;
+        let owner: any=null;
         data.referralId = await this.referAppService.generateReferralId(6);
 
         if (data.referredBy) {
@@ -217,7 +217,7 @@ export class UserService {
    */
   public async registeringMobile(phone: number): Promise<ResponseReturnType> {
     try {
-      const saveNumber = await new UserModel({ phone, verified: false }).save();
+      const saveNumber = await new UserModel({ phone, verified: false ,referralId:await this.referAppService.generateReferralId(6)}).save();
 
       const token = await this.otpService.generateOTP(phone, saveNumber._id);
       return {
