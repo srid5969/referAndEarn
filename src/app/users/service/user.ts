@@ -34,60 +34,7 @@ export class UserService {
     };
   }
 
-  public async userSignUp(data: User): Promise<ResponseReturnType> {
-    return new Promise<ResponseReturnType>(async (resolve, reject) => {
-      try {
-        let referralId: any = data.referredBy;
-        let owner: any = null;
-        data.referralId = await this.referAppService.generateReferralId(6);
 
-        if (data.referredBy) {
-          owner = await UserModel.findOne({ referralId: data.referredBy });
-
-          if (!owner) {
-            const result: ResponseReturnType = {
-              code: HttpStatus.UNPROCESSABLE_ENTITY,
-              message: "Referral id does not match to any user",
-              error: "User valid referral id to avoid the error",
-              data: null,
-              status: true,
-            };
-            return resolve(result);
-          }
-          const referringUser = owner._id;
-          data.referredBy = referringUser;
-        }
-        const saveUser: User | any = await new UserModel(data).save();
-        if (data.referredBy) {
-          const push = await UserModel.updateOne({ _id: data.referredBy }, { $push: { referrals: saveUser._id } });
-          console.log(push);
-
-          const t = await this.referAppService.saveReferralUser({
-            owner: owner,
-            referralId: referralId,
-            user: saveUser,
-          });
-          console.log(t);
-        }
-
-        return resolve({
-          code: HttpStatus.ACCEPTED,
-          message: ResponseMessage.Success,
-          data: saveUser,
-          error: null,
-          status: true,
-        });
-      } catch (error: any) {
-        return reject({
-          code: error.status || HttpStatus.CONFLICT,
-          message: ResponseMessage.Failed,
-          data: null,
-          error,
-          status: false,
-        });
-      }
-    });
-  }
   /**
    * login
    */
@@ -192,6 +139,12 @@ export class UserService {
     }
 
     const updateProfile = await UserModel.findOneAndUpdate({ _id }, payload);
+    
+    await this.referAppService.saveReferralUser({
+      owner: payload.referredBy,
+      referralId: payload.referralId,
+      user: updateProfile._id,
+    });
 
     if (!updateProfile) {
       return {
