@@ -241,7 +241,7 @@ export class UserService {
 
     const user: ObjectId | boolean = await this.otpService.verifyOTP(otp, token);
     if (user) {
-      await UserModel.updateOne({ _id: user }, { $set: { verified: true } });
+      await UserModel.findOneAndUpdate({ _id: user }, {  verified: true  });
       return {
         code: 200,
         status: true,

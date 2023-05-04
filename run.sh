@@ -1,6 +1,6 @@
 echo "Compiling typescript to javascript"
 
-tsc
+npm run build
 
 echo "The build was completed"
 
