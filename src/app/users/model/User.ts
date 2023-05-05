@@ -22,8 +22,8 @@ class User {
   public name?: string;
 
   @prop({ required: true, unique: true })
-  @IsDefined({ groups: [ "login"], message: EMPTY_PHONE })
-  @IsPhoneNumber("IN", { always: true, message: INVALID_PHONE })
+  @IsDefined({ groups: ["login"], message: EMPTY_PHONE })
+  @IsPhoneNumber("IN", { message: INVALID_PHONE })
   public phone!: number;
 
   @prop({ required: true, default: Roles.Employee })
@@ -34,7 +34,7 @@ class User {
   @prop({ required: true, default: false })
   public verified!: boolean;
 
-  @prop({ unique: true,required: true })
+  @prop({ unique: true, required: true })
   public referralId!: string;
 
   @prop({ type: ObjectId, default: null })

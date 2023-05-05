@@ -39,18 +39,8 @@ export class UserService {
    */
   public async loginOrRegister(phone: number): Promise<ResponseReturnType | any> {
     const userData = await this.checkUserPhoneNumber(phone);
-    if(!userData.verified){
-      const token = await this.otpService.generateOTP(phone, userData);
-      return {
-        code: HttpStatus.OK,
-        existingUser: false,
-        data: token,
-        error: null,
-        message: "The otp has been sent successfully and the user verification is still pending",
-        status: true,
-      };
-    }
-    if (userData) {
+    if (!userData) return await this.registeringMobile(phone);
+    if (userData.verified) {
       const token = await this.otpService.generateOTP(phone, userData);
       return {
         code: HttpStatus.OK,
@@ -60,20 +50,21 @@ export class UserService {
         message: "The otp has been sent successfully",
         status: true,
       };
+    } else if (!userData.verified) {
+      const token = await this.otpService.generateOTP(phone, userData);
+      return {
+        code: HttpStatus.OK,
+        existingUser: false,
+        data: token,
+        error: null,
+        message: "The otp has been sent successfully and the user verification is still pending",
+        status: true,
+      };
+    } else {
+      return await this.registeringMobile(phone);
     }
-    return await this.registeringMobile(phone);
-    return {
-      code: HttpStatus.PERMANENT_REDIRECT,
-      existingUser: false,
-      data: null,
-      error: null,
-      message: "New User",
-      status: true,
-    };
   }
-  public async getAllUsers() {
-    return UserModel.find({});
-  }
+
   public async logout(bearerToken: string): Promise<ResponseReturnType> {
     try {
       const token: string = bearerToken.split(" ")[1];
@@ -105,34 +96,10 @@ export class UserService {
    * @returns {ResponseReturnType}
    * @param payload
    */
-  public async verifyOtp(payload: any): Promise<ResponseReturnType> {
-    try {
-      const { otp, token } = payload;
-      const user = await this.otpService.verifyOTP(otp, token);
 
-      if (user) {
-        const userData = await UserModel.findOne({ _id: user });
-        return await this.generateJWT(userData);
-      }
-      return {
-        code: HttpStatus.UNAUTHORIZED,
-        data: "Cannot verify",
-        status: false,
-        error: "Wrong otp",
-        message: "OTP cannot be verified",
-      };
-    } catch (err: any) {
-      return {
-        code: HttpStatus.INTERNAL_SERVER_ERROR,
-        data: "server side error",
-        status: false,
-        error: err,
-        message: "server issue",
-      };
-    }
-  }
+  public async signUpWithId({ _id, payload }: { _id: ObjectId; payload: any }): Promise<ResponseReturnType> {
+    console.log(payload);
 
-  public async signUpWithId(_id: ObjectId, payload: User): Promise<ResponseReturnType> {
     if (payload.referredBy) {
       // checking if the device id is not presented in database - to avoid multiple time registration in same mobile with multiple referral code
       const existingDeviceId = await UserModel.findOne({ deviceId: payload.deviceId, _id: { $ne: _id } });
@@ -146,15 +113,37 @@ export class UserService {
           status: false,
         };
       }
+      const update = await UserModel.updateOne({ _id }, { $set: payload });
+      console.log(update);
+
+      if (update.modifiedCount == 1) {
+        payload.user = _id;
+        payload.referralId = payload.referralid;
+        payload.owner = payload.referredBy;
+        console.log(payload);
+
+        const up = await this.referAppService.saveReferralUser({ owner: payload.referredBy, referralId: payload.referralid, user: _id });
+        console.log(up);
+
+        const res: ResponseReturnType = {
+          code: HttpStatus.OK,
+          message: "success",
+          data: "",
+          error: "",
+          status: true,
+        };
+        return res;
+      }
+      return {
+        code: HttpStatus.FORBIDDEN,
+        status: false,
+        message: "repeated changes not allowed",
+        data: null,
+        error: "null",
+      };
     }
 
     const updateProfile = await UserModel.findOneAndUpdate({ _id }, payload);
-
-    await this.referAppService.saveReferralUser({
-      owner: payload.referredBy,
-      referralId: payload.referralId,
-      user: updateProfile._id,
-    });
 
     if (!updateProfile) {
       return {
@@ -177,7 +166,7 @@ export class UserService {
   /**
    * @params {number}
    */
-  public async registeringMobile(phone: number): Promise<ResponseReturnType|any> {
+  public async registeringMobile(phone: number): Promise<ResponseReturnType | any> {
     try {
       const saveNumber = await new UserModel({ phone, verified: false, referralId: await this.referAppService.generateReferralId(6) }).save();
 
@@ -204,17 +193,12 @@ export class UserService {
     const { otp, token } = payload;
 
     const user: ObjectId | boolean = await this.otpService.verifyOTP(otp, token);
+
     if (user) {
-      const v = await UserModel.updateOne({ _id: user }, { $set: { verified: true } });
-      let existingUser: boolean = v.modifiedCount != 1; //returns true or false
-      await UserModel.findOneAndUpdate({ _id: user }, { verified: true });
-      return {
-        code: 200,
-        status: true,
-        message: "Otp has been successfully verified",
-        error: null,
-        data: existingUser,
-      };
+      const userData = await UserModel.findOneAndUpdate({ _id: user }, { verified: true });
+      const data: any = await this.generateJWT(userData);
+      data.existingUser = userData.verified;
+      return data;
     }
     return {
       code: HttpStatus.NON_AUTHORITATIVE_INFORMATION,
