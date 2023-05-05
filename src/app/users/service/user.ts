@@ -34,12 +34,22 @@ export class UserService {
     };
   }
 
-
   /**
    * login
    */
   public async loginOrRegister(phone: number): Promise<ResponseReturnType | any> {
     const userData = await this.checkUserPhoneNumber(phone);
+    if(!userData.verified){
+      const token = await this.otpService.generateOTP(phone, userData);
+      return {
+        code: HttpStatus.OK,
+        existingUser: false,
+        data: token,
+        error: null,
+        message: "The otp has been sent successfully and the user verification is still pending",
+        status: true,
+      };
+    }
     if (userData) {
       const token = await this.otpService.generateOTP(phone, userData);
       return {
@@ -92,8 +102,8 @@ export class UserService {
 
   /**
    * @login - otp verification
-   * @param {otp,token}
    * @returns {ResponseReturnType}
+   * @param payload
    */
   public async verifyOtp(payload: any): Promise<ResponseReturnType> {
     try {
@@ -139,7 +149,7 @@ export class UserService {
     }
 
     const updateProfile = await UserModel.findOneAndUpdate({ _id }, payload);
-    
+
     await this.referAppService.saveReferralUser({
       owner: payload.referredBy,
       referralId: payload.referralId,
@@ -167,14 +177,15 @@ export class UserService {
   /**
    * @params {number}
    */
-  public async registeringMobile(phone: number): Promise<ResponseReturnType> {
+  public async registeringMobile(phone: number): Promise<ResponseReturnType|any> {
     try {
       const saveNumber = await new UserModel({ phone, verified: false, referralId: await this.referAppService.generateReferralId(6) }).save();
 
       const token = await this.otpService.generateOTP(phone, saveNumber._id);
       return {
         code: 200,
-        message: "OTP has been successfully sended",
+        existingUser: false,
+        message: "OTP has been successfully send",
         data: token,
         error: null,
         status: true,
@@ -194,13 +205,16 @@ export class UserService {
 
     const user: ObjectId | boolean = await this.otpService.verifyOTP(otp, token);
     if (user) {
-      await UserModel.findOneAndUpdate({ _id: user }, {  verified: true  });
+      const v = await UserModel.updateOne({ _id: user }, { $set: { verified: true } });
+      let existingUser: boolean = false;
+      existingUser = v.modifiedCount == 1 ? false : true;
+      await UserModel.findOneAndUpdate({ _id: user }, { verified: true });
       return {
         code: 200,
         status: true,
         message: "Otp has been successfully verified",
         error: null,
-        data: null,
+        data: existingUser,
       };
     }
     return {
