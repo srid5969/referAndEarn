@@ -15,7 +15,7 @@ export class UserService {
   @inject(() => OTPService)
   private readonly otpService!: OTPService;
   public async checkUserPhoneNumber(phone: number): Promise<any> {
-    return new Promise<boolean>(async (resolve) => {
+    return new Promise<boolean>(async (resolve): Promise<any> => {
       const registeredUser = await UserModel.findOne({ phone: phone });
       if (registeredUser) {
         return resolve(registeredUser);
@@ -206,8 +206,7 @@ export class UserService {
     const user: ObjectId | boolean = await this.otpService.verifyOTP(otp, token);
     if (user) {
       const v = await UserModel.updateOne({ _id: user }, { $set: { verified: true } });
-      let existingUser: boolean = false;
-      existingUser = v.modifiedCount == 1 ? false : true;
+      let existingUser: boolean = v.modifiedCount != 1; //returns true or false
       await UserModel.findOneAndUpdate({ _id: user }, { verified: true });
       return {
         code: 200,
