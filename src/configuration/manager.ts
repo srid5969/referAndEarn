@@ -6,10 +6,10 @@ class Configuration {
   public port?: string;
   public jwtSecret?: string;
   constructor() {
-    this.dataBaseName = process.env.MONGODB_DATABASENAME;
+    this.dataBaseName = process.env.MONGODB_DATABASE;
     this.mongodbHostName = process.env.MONGODB_HOSTNAME;
-    this.jwtSecret = process.env.jwtSecretKey;
-    this.port = process.env.port;
+    this.jwtSecret = process.env.JWT_SECRET_KEY;
+    this.port = process.env.PORT;
   }
 }
 const configurations = new Configuration();
