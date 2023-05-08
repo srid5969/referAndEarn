@@ -43,7 +43,9 @@ export class UserController {
   @UseBefore(UserControllerValidation)
   @UseBefore(validate(User, ["create"]))
   public async signUp(@Body() body: any, @Req() req: any, @Res() res: Response): Promise<Response> {
-    const data = await this.userService.signUpWithId({ _id: req.user._id, payload: body });
+    console.log("loging",body);
+    
+    const data = await this.userService.signUpWithId( req.user,  body );
     return data.code ? res.status(data.code).json(data) : res.status(HttpStatus.ACCEPTED).send(data);
   }
   @Post("/verify-otp")
@@ -54,5 +56,9 @@ export class UserController {
     } catch (error: any) {
       return error.code ? res.status(error.code).json(error) : res.status(HttpStatus.CONFLICT).send(error);
     }
+  }
+   @Get('/profile')
+  public async getUserDetails(@Req() req: Request, @Res() res: Response): Promise<Response> {
+  return res.send('Hello world')
   }
 }

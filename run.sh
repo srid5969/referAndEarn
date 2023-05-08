@@ -9,4 +9,4 @@ echo "About to run the application in a min"
 
 npx nodemon build/server.js
 
- sudo docker build -t refer-and-earn-cabio .
+#  sudo docker build -t refer-and-earn-cabio .

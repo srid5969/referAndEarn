@@ -11,18 +11,24 @@ class Authentication {
     }
 
     let token: any = req.headers.authorization.split(" ") || "";
-    if (token[1]) {
-      const data = await TokenModel.findOne({ token: token[1], expired: false });
-      if (data) {
-        req.user = data.user;
-        
-        
-        return next();
+    try {
+      if (token[1]) {
+        const {user} = await TokenModel.findOne({ token: token[1], expired: false },{_id:0,user:1});
+        if (user) {
+          req.user = user;
+          console.log("mile",user);
+          
+          return next();
+        }
+      return  res.json({ message: AUTH_TOKEN_INVALID });
+      } else {
+        return res.status(404).json({ message: "Bearer Token Not Found", status: "Failed" });
       }
-    return  res.json({ message: AUTH_TOKEN_INVALID });
-    } else {
+    } catch (error) {
       return res.status(404).json({ message: "Bearer Token Not Found", status: "Failed" });
+
     }
+    
   }
 }
 
