@@ -99,8 +99,7 @@ export class UserService {
    * @param payload
    */
 
-  public async signUpWithId( _id:ObjectId, payload:any): Promise<ResponseReturnType> {
-
+  public async signUpWithId(_id: ObjectId, payload: any): Promise<ResponseReturnType> {
     if (payload.referredBy) {
       // checking if the device id is not presented in database - to avoid multiple time registration in same mobile with multiple referral code
       const existingDeviceId = await UserModel.findOne({ deviceId: payload.deviceId, _id: { $ne: _id } });
@@ -114,17 +113,16 @@ export class UserService {
           status: false,
         };
       }
-      console.log("referredBy   ",payload.referredBy,"TokenId  ",_id)
+      console.log("referredBy   ", payload.referredBy, "TokenId  ", _id);
       const update = await UserModel.updateOne({ _id }, { $set: payload });
-      await UserModel.updateOne({ _id:payload.referredBy },{$push:{referrals:_id}});
-     
+      await UserModel.updateOne({ _id: payload.referredBy }, { $push: { referrals: _id } });
 
       if (update.modifiedCount == 1) {
         payload.user = _id;
         payload.referralId = payload.referralid;
         payload.owner = payload.referredBy;
 
-         await this.referAppService.saveReferralUser({
+        await this.referAppService.saveReferralUser({
           owner: payload.referredBy,
           referralId: payload.referralid,
           user: payload.user,
@@ -241,6 +239,17 @@ export class UserService {
       status: true,
       error: null,
       message: "OTP successfully verified",
+    };
+  }
+
+  public async getUserProfileDetails(_id: ObjectId): Promise<ResponseReturnType> {
+    const data = await UserModel.findOne({ _id }).populate({ path: "referrals", model: UserModel, select: "name phone verified createdAt" });
+    return {
+      code: HttpStatus.OK,
+      status: true,
+      message: "Success ",
+      error: null,
+      data: data,
     };
   }
 }

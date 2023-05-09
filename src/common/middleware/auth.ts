@@ -23,7 +23,7 @@ class Authentication {
         }
       return  res.json({ message: AUTH_TOKEN_INVALID });
       } else {
-        return res.status(404).json({ message: "Bearer Token Not Found", status: "Failed" });
+        return res.status(404).json({ message: "Bearer Token Not Found", status: "Failed" }); 
       }
     } catch (error) {
       return res.status(HttpStatus.UNAUTHORIZED).json({ message: "Unauthorized token", status: "Failed" });

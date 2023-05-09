@@ -14,7 +14,7 @@
 		"restart:prod": "pm2  restart ./build/server.js --watch",
 		"monit:prod": "pm2  monit ./build/server.js --watch",
 		"test": "jest",
-		"restart":"npm run build && npm run restart:prod"
+		"restart": "npm run build && npm run restart:prod"
 	},
 	"_moduleAliases": {
 		"app": "build/app",
@@ -46,6 +46,7 @@
 		"jsonwebtoken": "^9.0.0",
 		"module-alias": "^2.2.2",
 		"moment": "^2.29.4",
+		"mongoose": "^7.1.0",
 		"morgan": "^1.10.0",
 		"nodemon": "^2.0.21",
 		"reflect-metadata": "^0.1.13",

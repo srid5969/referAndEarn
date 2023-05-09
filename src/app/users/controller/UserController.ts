@@ -57,8 +57,14 @@ export class UserController {
       return error.code ? res.status(error.code).json(error) : res.status(HttpStatus.CONFLICT).send(error);
     }
   }
+  @UseBefore(Authentication)
    @Get('/profile')
-  public async getUserDetails(@Req() req: Request, @Res() res: Response): Promise<Response> {
-  return res.send('Hello world')
+  public async getUserDetails(@Req() req: any, @Res() res: Response): Promise<Response> {
+    try {      
+      const data = await this.userService.getUserProfileDetails(req.user);
+      return data.code ? res.status(data.code).json(data) : res.status(HttpStatus.ACCEPTED).send(data);
+    } catch (error: any) {
+      return error.code ? res.status(error.code).json(error) : res.status(HttpStatus.CONFLICT).send(error);
+    }
   }
 }
