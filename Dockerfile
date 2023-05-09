@@ -1,16 +1,14 @@
 FROM node:latest
 
-WORKDIR /ReferAndEarn
+WORKDIR /app
 
-COPY package.json ./
+COPY package*.json ./
 
 RUN npm install
 
-WORKDIR ../ReferAndEarn
+COPY  . .
 
-RUN npm build
-
-COPY . /build
+RUN npm run build
 
 EXPOSE 8080
 
