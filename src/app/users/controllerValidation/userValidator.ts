@@ -13,13 +13,15 @@ export class UserControllerValidation {
     //verify phone
     const verified: boolean = await this.service.verify(phone);
     if (req.body.referredBy) {
-      const referredBy = await this.service.changeReferredByToObjectId(req.body.referredBy);
+      req.body.referralid = req.body.referredBy;
+      const referredBy: any = await this.service.changeReferredByToObjectId(req.body.referredBy);
       if (!referredBy) {
         return res.status(HttpStatus.NON_AUTHORITATIVE_INFORMATION).json({
           message: "Wrong referral id",
         });
       }
-      req.body.referredBy = referredBy;
+      req.body.referredBy = referredBy.toString()
+      return next();
     }
     if (verified) {
       return next();

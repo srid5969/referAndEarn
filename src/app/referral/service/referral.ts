@@ -28,7 +28,7 @@ export class ReferService {
     return result;
   }
 
-  public async saveReferralUser(payload: UserReferral|any):Promise<any> {
-   return await new ReferralUserModel(payload).save();
+  public async saveReferralUser(payload: UserReferral | any): Promise<any> {
+    return await new ReferralUserModel(payload).save();
   }
 }

@@ -9,7 +9,7 @@ class UserReferral {
   /**
    * @param  referralId - The referral id of the owner
    */
-  @prop({ required: true })
+  @prop({ required: false })
   public referralId!: string;
   /**
    * The @owner is a person one who refer his friend

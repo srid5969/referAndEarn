@@ -1,18 +1,17 @@
-import { injectable } from "@leapjs/common";
+import {injectable} from "@leapjs/common";
 
 import otp from "@distrentic/totp";
-import { ObjectId } from "mongodb";
-import { v4 as uuidv4 } from "uuid";
+import {ObjectId} from "mongodb";
+import {v4 as uuidv4} from "uuid";
 
-import { OTPModel } from "../model/otp";
+import {OTPModel} from "../model/otp";
 
 @injectable()
 export class OTPService {
   public async generateOtp(): Promise<number> {
     const min = 1000;
     const max = 9999;
-    const otp = Math.floor(Math.random() * (max - min + 1) + min);
-    return otp;
+    return Math.floor(Math.random() * (max - min + 1) + min);
   }
   public async generateOTP(phone: number, user: ObjectId): Promise<any> {
     return this.OtpToPhone(phone, user);

@@ -17,7 +17,7 @@ export class UserController {
       const data = await this.userService.logout(token);
       return data.code ? res.status(data.code).json(data) : res.status(HttpStatus.ACCEPTED).send(data);
     } catch (error: any) {
-      return error.status ? res.status(error.code).json(error) : res.status(HttpStatus.CONFLICT).send(error);
+      return error.code ? res.status(error.code).json(error) : res.status(HttpStatus.CONFLICT).send(error);
     }
   }
 
@@ -28,7 +28,7 @@ export class UserController {
       const data = await this.userService.loginOrRegister(req.phone);
       return data.code ? res.status(data.code).json(data) : res.status(HttpStatus.ACCEPTED).send(data);
     } catch (error: any) {
-      return error.status ? res.status(error.code).json(error) : res.status(HttpStatus.CONFLICT).send(error);
+      return error.code ? res.status(error.code).json(error) : res.status(HttpStatus.CONFLICT).send(error);
     }
   }
   @Get("/get/:id")
@@ -42,19 +42,29 @@ export class UserController {
   @UseBefore(Authentication)
   @UseBefore(UserControllerValidation)
   @UseBefore(validate(User, ["create"]))
-  public async signUp(@Body() body: User, @Req() req: any,@Res() res:Response): Promise<Response> {
-    const data = await this.userService.signUpWithId(req.user._id, body);
+  public async signUp(@Body() body: any, @Req() req: any, @Res() res: Response): Promise<Response> {
+    console.log("loging",body);
+    
+    const data = await this.userService.signUpWithId( req.user,  body );
     return data.code ? res.status(data.code).json(data) : res.status(HttpStatus.ACCEPTED).send(data);
-
   }
   @Post("/verify-otp")
   public async verifyOTP(@Body() req: any, @Res() res: Response): Promise<Response> {
-    
     try {
-      const data = await this.userService.verifyOtp(req);
+      const data = await this.userService.verifyOTP(req);
       return data.code ? res.status(data.code).json(data) : res.status(HttpStatus.ACCEPTED).send(data);
     } catch (error: any) {
-      return error.status ? res.status(error.code).json(error) : res.status(HttpStatus.CONFLICT).send(error);
+      return error.code ? res.status(error.code).json(error) : res.status(HttpStatus.CONFLICT).send(error);
+    }
+  }
+  @UseBefore(Authentication)
+   @Get('/profile')
+  public async getUserDetails(@Req() req: any, @Res() res: Response): Promise<Response> {
+    try {      
+      const data = await this.userService.getUserProfileDetails(req.user);
+      return data.code ? res.status(data.code).json(data) : res.status(HttpStatus.ACCEPTED).send(data);
+    } catch (error: any) {
+      return error.code ? res.status(error.code).json(error) : res.status(HttpStatus.CONFLICT).send(error);
     }
   }
 }
